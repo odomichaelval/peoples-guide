@@ -1,0 +1,31 @@
+{
+  "trusted_domains": [
+    "gov.uk",
+    "sheffield.gov.uk",
+    "nhs.uk",
+    "citizensadvice.org.uk",
+    "shelter.org.uk",
+    "england.shelter.org.uk",
+    "samaritans.org",
+    "trussell.org.uk",
+    "stepchange.org",
+    "moneyhelper.org.uk"
+  ],
+  "fetch_urls": [
+    {"url": "https://www.gov.uk/universal-credit/eligibility", "category": "income", "provider": "GOV.UK"},
+    {"url": "https://www.gov.uk/universal-credit/how-to-claim", "category": "income", "provider": "GOV.UK"},
+    {"url": "https://www.gov.uk/universal-credit/other-financial-support", "category": "income", "provider": "GOV.UK"},
+    {"url": "https://www.gov.uk/jobseekers-allowance/eligibility", "category": "employment", "provider": "GOV.UK"},
+    {"url": "https://www.gov.uk/council-tax-reduction", "category": "council_tax", "provider": "GOV.UK"},
+    {"url": "https://www.gov.uk/housing-benefit", "category": "housing", "provider": "GOV.UK"},
+    {"url": "https://www.gov.uk/apply-free-school-meals", "category": "food", "provider": "GOV.UK"},
+    {"url": "https://www.gov.uk/the-warm-home-discount-scheme", "category": "energy", "provider": "GOV.UK"},
+    {"url": "https://www.gov.uk/pension-credit/eligibility", "category": "income", "provider": "GOV.UK"},
+    {"url": "https://www.gov.uk/pip", "category": "health", "provider": "GOV.UK"},
+    {"url": "https://www.gov.uk/carers-allowance", "category": "income", "provider": "GOV.UK"},
+    {"url": "https://www.gov.uk/student-finance", "category": "education", "provider": "GOV.UK"},
+    {"url": "https://www.gov.uk/redundant-your-rights", "category": "employment", "provider": "GOV.UK"},
+    {"url": "https://www.nhs.uk/nhs-services/help-with-health-costs/", "category": "health", "provider": "NHS"},
+    {"url": "https://www.sheffield.gov.uk/", "category": "general", "provider": "Sheffield City Council"}
+  ]
+}

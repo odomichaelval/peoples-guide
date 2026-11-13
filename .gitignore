@@ -1,6 +1,10 @@
 .venv/
 __pycache__/
+*.pyc
 .env
-node_modules/
-data/raw/
-data/private/
+data/index/
+data/app.db
+data/sources/fetched/
+frontend/node_modules/
+frontend/dist/
+.DS_Store

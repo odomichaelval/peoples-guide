@@ -1,4 +1,6 @@
 import { useState } from "react";
+import SupportResponse from "./SupportResponse";
+import type { Source } from "./SupportResponse";
 import "./App.css";
 
 const TOPICS = [
@@ -16,6 +18,7 @@ export default function App() {
   const [topics, setTopics] = useState<string[]>([]);
   const [situation, setSituation] = useState("");
   const [reply, setReply] = useState("");
+  const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -33,6 +36,7 @@ export default function App() {
     setTopics([]);
     setSituation("");
     setReply("");
+    setSources([]);
     setError("");
   }
 
@@ -49,10 +53,12 @@ export default function App() {
     setLoading(true);
     setError("");
     setReply("");
+    setSources([]);
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
+        credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
         },
@@ -64,19 +70,40 @@ export default function App() {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
         throw new Error(
-          "Unable to get guidance. Please check the backend terminal."
+          typeof data.detail === "string"
+            ? data.detail
+            : "Unable to get guidance. Please try again."
         );
       }
-
-      const data = await response.json();
 
       if (typeof data.reply !== "string" || !data.reply.trim()) {
         throw new Error("No answer was returned. Please try again.");
       }
 
+      const validSources: Source[] = Array.isArray(data.sources)
+        ? data.sources.filter(
+            (item: unknown): item is Source => {
+              if (typeof item !== "object" || item === null) {
+                return false;
+              }
+
+              const source = item as Record<string, unknown>;
+
+              return (
+                typeof source.passage_id === "string" &&
+                typeof source.title === "string" &&
+                typeof source.url === "string"
+              );
+            }
+          )
+        : [];
+
       setReply(data.reply);
+      setSources(validSources);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Something went wrong."
@@ -89,10 +116,7 @@ export default function App() {
   return (
     <main className="page">
       <header className="header">
-        <a className="brand" href="/">
-          People’s Guide
-        </a>
-
+        <a className="brand" href="/">People’s Guide</a>
         <span className="badge">Public services prototype</span>
       </header>
 
@@ -125,7 +149,6 @@ export default function App() {
         <label htmlFor="nation">
           Which UK nation do you live in?
         </label>
-
         <select
           id="nation"
           value={nation}
@@ -142,7 +165,6 @@ export default function App() {
         <label htmlFor="council">
           Council area or town — optional
         </label>
-
         <input
           id="council"
           type="text"
@@ -155,7 +177,6 @@ export default function App() {
 
         <fieldset className="topic-fieldset">
           <legend>What would you like help with?</legend>
-
           <p className="muted">
             Choose any that apply, or leave blank.
           </p>
@@ -169,17 +190,13 @@ export default function App() {
                   onChange={() => toggleTopic(topic)}
                   disabled={loading}
                 />
-
                 <span>{topic}</span>
               </label>
             ))}
           </div>
         </fieldset>
 
-        <label htmlFor="situation">
-          Describe your situation
-        </label>
-
+        <label htmlFor="situation">Describe your situation</label>
         <textarea
           id="situation"
           value={situation}
@@ -202,9 +219,7 @@ export default function App() {
             className="primary"
             onClick={getSupport}
             disabled={
-              loading ||
-              !nation ||
-              situation.trim().length < 10
+              loading || !nation || situation.trim().length < 10
             }
           >
             {loading
@@ -222,26 +237,19 @@ export default function App() {
         </div>
 
         {error && (
-          <p className="error" role="alert">
-            {error}
-          </p>
+          <p className="error" role="alert">{error}</p>
+        )}
+      </section>
+
+      <div aria-live="polite" aria-busy={loading}>
+        {loading && (
+          <p className="notice">Preparing your guidance…</p>
         )}
 
-        <div aria-live="polite" aria-busy={loading}>
-          {loading && (
-            <p className="muted">
-              Waiting for the local model…
-            </p>
-          )}
-
-          {reply && (
-            <section className="result">
-              <h2>Your response</h2>
-              <div className="answer">{reply}</div>
-            </section>
-          )}
-        </div>
-      </section>
+        {reply && (
+          <SupportResponse reply={reply} sources={sources} />
+        )}
+      </div>
 
       <footer>
         This prototype helps you explore services. It does not

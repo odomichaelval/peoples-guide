@@ -7,20 +7,36 @@ type LoginProps = {
 };
 
 export default function Login({ onSignedIn }: LoginProps) {
+  const [registering, setRegistering] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [message, setMessage] = useState("");
-  const [registering, setRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  function switchMode() {
+    setRegistering((current) => !current);
+    setPassword("");
+    setShowPassword(false);
+    setError("");
+    setNotice("");
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (loading) return;
 
+    setError("");
+    setNotice("");
+
+    if (registering && password.length < 12) {
+      setError("Choose a password of at least 12 characters.");
+      return;
+    }
+
     setLoading(true);
-    setMessage("");
 
     try {
       const response = await fetch(
@@ -38,28 +54,64 @@ export default function Login({ onSignedIn }: LoginProps) {
         }
       );
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
 
       if (!response.ok) {
+        if (response.status === 422) {
+          throw new Error(
+            "Enter a valid email address. New passwords must contain 12–128 characters."
+          );
+        }
+
+        if (response.status === 401) {
+          throw new Error("Email or password is incorrect.");
+        }
+
+        if (response.status === 409) {
+          throw new Error(
+            "Unable to create this account. Try signing in instead."
+          );
+        }
+
+        if (response.status === 403) {
+          throw new Error(
+            "Open this application at http://localhost:5173 and try again."
+          );
+        }
+
+        if (response.status === 404) {
+          throw new Error(
+            "The account service was not found. Check that the updated backend is running."
+          );
+        }
+
         throw new Error(
-          typeof data.detail === "string"
-            ? data.detail
-            : "Please check your email and password."
+          "The account service is unavailable. Please try again."
+        );
+      }
+
+      if (
+        !registering &&
+        (!data || typeof data.email !== "string")
+      ) {
+        throw new Error(
+          "The account service returned an unexpected response."
         );
       }
 
       setPassword("");
+      setShowPassword(false);
 
       if (registering) {
         setRegistering(false);
-        setMessage("Account created. Enter your password to sign in.");
+        setNotice("Account created. Enter your password to sign in.");
       } else {
         onSignedIn();
       }
-    } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
           : "Unable to connect. Please try again."
       );
     } finally {
@@ -67,110 +119,83 @@ export default function Login({ onSignedIn }: LoginProps) {
     }
   }
 
-  function switchMode() {
-    setRegistering((current) => !current);
-    setPassword("");
-    setMessage("");
-  }
-
   return (
-    <main className="pg-login">
-      <section className="pg-story" aria-label="About People's Guide">
-        <a className="pg-logo" href="/">
-          <span className="pg-mark" aria-hidden="true">
-            p<span>g</span>
-          </span>
-          <span>
-            People’s Guide<span className="pg-logo-dot">.</span>
-          </span>
+    <main className="account-page">
+      <section className="account-story">
+        <a href="/" className="account-brand">
+          <span className="account-symbol" aria-hidden="true">P</span>
+          People’s Guide
         </a>
 
-        <div className="pg-story-content">
-          <div className="pg-kicker">
-            <span />
-            A LITTLE CLARITY. A WAY FORWARD.
-          </div>
+        <div className="account-story-body">
+          <p className="account-eyebrow">
+            A CLEARER WAY FORWARD
+          </p>
 
           <h1>
-            Life gets
+            The Right Support.
             <br />
-            complicated.
+            The Right Information.
             <br />
-            <span>
-              Finding support
-              <br />
-              shouldn’t.
-            </span>
+            <span>One Place.</span>
           </h1>
 
-          <p className="pg-story-description">
-            A clearer path through public services.
-            Start with your situation. Discover your next step.
+          <p className="account-description">
+            Describe your situation in your own words.
+            Explore relevant public services and practical next
+            steps, with links to official guidance.
           </p>
 
-          <div className="pg-illustration" aria-hidden="true">
-            <div className="pg-orbit pg-orbit-one" />
-            <div className="pg-orbit pg-orbit-two" />
-            <div className="pg-orbit pg-orbit-three" />
-
-            <div className="pg-path-card">
-              <div className="pg-path-icon">↗</div>
-              <div>
-                <strong>One place to begin.</strong>
-                <span>Support for the things that matter.</span>
-              </div>
-              <span className="pg-path-spark">✦</span>
-            </div>
-
-            <span className="pg-floating pg-floating-one">
-              Housing
-            </span>
-            <span className="pg-floating pg-floating-two">
-              Wellbeing
-            </span>
-            <span className="pg-floating pg-floating-three">
-              Money & care
-            </span>
-          </div>
+          <ul className="account-features">
+            <li>
+              <strong>Local AI processing</strong>
+              <span>
+                Powered by our team’s NVIDIA DGX Spark.
+              </span>
+            </li>
+            <li>
+              <strong>Official reference sources</strong>
+              <span>
+                See the public guidance retrieved for your response.
+              </span>
+            </li>
+            <li>
+              <strong>Practical next steps</strong>
+              <span>
+                Understand your options and where to go next.
+              </span>
+            </li>
+          </ul>
         </div>
 
-        <div className="pg-story-footer">
-          <span className="pg-footer-line" />
-          Built around people. Powered by local AI.
-        </div>
+        <p className="account-story-footer">
+          Built around people.
+        </p>
       </section>
 
-      <section className="pg-access">
-        <div className="pg-top-note">
-          THE RIGHT SUPPORT. ONE PLACE.
-        </div>
-
-        <div className="pg-form-wrap">
-          <div className="pg-welcome-icon" aria-hidden="true">
-            ↗
-          </div>
-
-          <p className="pg-overline">
-            YOUR NEXT CHAPTER STARTS HERE
-          </p>
+      <section className="account-access">
+        <div className="account-card">
+          <span className="account-pill">
+            YOUR PEOPLE’S GUIDE ACCOUNT
+          </span>
 
           <h2>
             {registering ? "Create your account." : "Welcome back."}
           </h2>
 
-          <p className="pg-form-description">
+          <p className="account-subtitle">
             {registering
-              ? "Create a People’s Guide account to get started."
-              : "Sign in to explore the support available to you."}
+              ? "One account. A clearer place to start."
+              : "Sign in to continue to your support navigator."}
           </p>
 
           <form onSubmit={handleSubmit}>
-            <label htmlFor="login-email">
+            <label htmlFor="account-email">
               Email address
             </label>
 
             <input
-              id="login-email"
+              id="account-email"
               name="email"
               type="email"
               autoComplete="username"
@@ -182,13 +207,13 @@ export default function Login({ onSignedIn }: LoginProps) {
               required
             />
 
-            <label htmlFor="login-password">
+            <label htmlFor="account-password">
               Password
             </label>
 
-            <div className="pg-password">
+            <div className="account-password">
               <input
-                id="login-password"
+                id="account-password"
                 name="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete={
@@ -196,19 +221,23 @@ export default function Login({ onSignedIn }: LoginProps) {
                 }
                 placeholder={
                   registering
-                    ? "Create a password of at least 12 characters"
+                    ? "At least 12 characters"
                     : "Enter your password"
                 }
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 minLength={registering ? 12 : 1}
                 maxLength={128}
+                aria-describedby={
+                  registering ? "account-password-help" : undefined
+                }
                 disabled={loading}
                 required
               />
 
               <button
                 type="button"
+                className="account-show"
                 onClick={() => setShowPassword((current) => !current)}
                 aria-label={
                   showPassword ? "Hide password" : "Show password"
@@ -220,9 +249,27 @@ export default function Login({ onSignedIn }: LoginProps) {
               </button>
             </div>
 
+            {registering && (
+              <p id="account-password-help" className="account-help">
+                Use a unique password of 12–128 characters.
+              </p>
+            )}
+
+            {error && (
+              <p className="account-error" role="alert">
+                {error}
+              </p>
+            )}
+
+            {notice && (
+              <p className="account-notice" role="status">
+                {notice}
+              </p>
+            )}
+
             <button
-              className="pg-signin"
               type="submit"
+              className="account-submit"
               disabled={loading}
             >
               <span>
@@ -234,72 +281,28 @@ export default function Login({ onSignedIn }: LoginProps) {
               </span>
               <span aria-hidden="true">→</span>
             </button>
-
-            {message && (
-              <p className="pg-feedback" role="status">
-                {message}
-              </p>
-            )}
           </form>
 
-          <div className="pg-preview">
-            <button
-              type="button"
-              className="pg-account-toggle"
-              disabled={loading}
-              onClick={switchMode}
-            >
-              {registering
-                ? "Already have an account? Sign in"
-                : "New here? Create an account"}
-            </button>
+          <button
+            type="button"
+            className="account-switch"
+            onClick={switchMode}
+            disabled={loading}
+          >
+            {registering
+              ? "Already have an account? Sign in"
+              : "New here? Create an account"}
+          </button>
 
-            {registering && (
-              <p>
-                Use a unique password of at least 12 characters.
-                Email verification and password recovery are not
-                available in this prototype.
-              </p>
-            )}
-          </div>
-
-          <div className="pg-processing">
-            <svg
-              width="20"
-              height="22"
-              viewBox="0 0 24 26"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M12 2L21 6V12C21 18 17 22 12 24C7 22 3 18 3 12V6L12 2Z"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M8 13L11 16L16 10"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-
-            <div>
-              <strong>
-                Local intelligence. Thoughtful support.
-              </strong>
-              <p>
-                AI processing runs on our team’s NVIDIA DGX Spark.
-              </p>
-            </div>
-          </div>
+          <p className="account-prototype">
+            Hackathon prototype. Email verification and password
+            recovery are not available yet.
+          </p>
         </div>
 
-        <footer className="pg-access-footer">
-          <span>People’s Guide</span>
-          <span>Clarity. Confidence. A next step.</span>
+        <footer className="account-access-footer">
+          Guidance to help you explore services.
+          Official services determine eligibility.
         </footer>
       </section>
     </main>
