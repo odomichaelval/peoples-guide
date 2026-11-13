@@ -1,21 +1,21 @@
-"""People's Guide API.
+"""People's Guide API + website, all on one port.
 
-Run from the project root:
-    source .venv/bin/activate
-    uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
-API docs: http://<spark>:8000/docs
+Run from the project root:  bash scripts/start.sh
+  http://localhost:8000/site/   -> teammate's pages (site/ folder)
+  http://localhost:8000/        -> React agent dashboard (frontend/dist)
+  http://localhost:8000/api/... -> API      http://localhost:8000/docs -> Swagger
 """
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend import auth, db
 from backend.app.routes_auth import router as auth_router
 from backend.app.routes_guide import router as guide_router
-from backend.config import settings
+from backend.config import ROOT_DIR, settings
 from backend.rag.store import store
 
 
@@ -34,16 +34,22 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="People's Guide API", version="1.0.0", lifespan=lifespan)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+# 1) API routes (must come first)
 app.include_router(auth_router)
 app.include_router(guide_router)
 
-# Serve the built React app (npm run build) from the same port in "production" mode.
+# 2) Teammate's static website: site/index.html, login.html, register.html, ...
+SITE_DIR = ROOT_DIR / "site"
+if SITE_DIR.exists():
+    @app.get("/site", include_in_schema=False)
+    def site_redirect():
+        return RedirectResponse("/site/")
+
+    app.mount("/site", StaticFiles(directory=SITE_DIR, html=True), name="site")
+
+# 3) React agent dashboard (built with: cd frontend && npm run build)
 if settings.frontend_dist.exists():
     app.mount("/assets", StaticFiles(directory=settings.frontend_dist / "assets"), name="assets")
 

@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>People’s Guide | Public services support</title>
+
+  <style>
+    :root {
+      --primary: #10382F;
+      --secondary: #D1E7A7;
+      --neutral: #FFFFFF;
+      --border: rgb(16 56 47 / 22%);
+      --shadow: rgb(16 56 47 / 15%);
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      background: var(--neutral);
+      color: var(--primary);
+      font: 1rem/1.6 "Segoe UI", Arial, sans-serif;
+    }
+
+    a { color: inherit; text-underline-offset: 0.25em; }
+    button, select { font: inherit; }
+    button, summary { cursor: pointer; }
+
+    :focus-visible,
+    #next-title:focus {
+      outline: 3px solid var(--primary);
+      outline-offset: 4px;
+    }
+
+    .container {
+      width: min(1100px, calc(100% - 2rem));
+      margin-inline: auto;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: 0.5rem;
+      left: 1rem;
+      z-index: 2;
+      padding: 0.5rem 1rem;
+      background: var(--neutral);
+      transform: translateY(-200%);
+    }
+
+    .skip-link:focus { transform: translateY(0); }
+
+    .site-header, .site-footer {
+      padding-block: 1rem;
+      border-block-end: 1px solid var(--border);
+    }
+
+    .header-inner, .site-nav, .brand, .actions, .filters, .guide-form {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .header-inner { justify-content: space-between; gap: 1rem; }
+    .site-nav { gap: 0.75rem 1.15rem; font-weight: 700; }
+    .brand { font-size: 1.2rem; font-weight: 750; text-decoration: none; }
+    .brand svg { flex-shrink: 0; }
+
+    .button, .filters button, select {
+      display: inline-block;
+      max-width: 100%;
+      min-height: 44px;
+      padding: 0.55rem 0.9rem;
+      border: 1px solid var(--primary);
+      border-radius: 0.65rem;
+    }
+
+    .button, .filters button[aria-pressed="true"] {
+      background: var(--primary);
+      color: var(--neutral);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .filters button, select {
+      background: var(--neutral);
+      color: var(--primary);
+    }
+
+    .hero {
+      margin-top: 1.5rem;
+      padding: clamp(1.5rem, 7vw, 5rem);
+      border-radius: 1.5rem;
+      background:
+        radial-gradient(ellipse at top right, rgb(209 231 167 / 22%), transparent 65%),
+        var(--primary);
+      color: var(--neutral);
+    }
+
+    .hero-copy { max-width: 42rem; }
+    .hero :focus-visible { outline-color: var(--secondary); }
+    .hero .button { background: var(--secondary); color: var(--primary); }
+    .location { color: var(--secondary); letter-spacing: 0.1em; }
+    .location, .tagline, .source, summary, figcaption, label { font-weight: 700; }
+
+    h1, h2 { font-family: Georgia, serif; line-height: 1.12; }
+    h1 { font-size: clamp(2.5rem, 7vw, 5rem); margin: 0.25em 0; }
+    h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0 0 1rem; }
+    h3 { margin: 0 0 0.5rem; }
+
+    .section { padding-block: 1.75rem; }
+    .section-intro { max-width: 65ch; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr));
+      align-items: start;
+      gap: 1rem;
+    }
+
+    .card, .panel, .answer-box {
+      padding: clamp(1rem, 3vw, 1.75rem);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      background: var(--neutral);
+    }
+
+    .panel { background: var(--secondary); }
+    .answer-box { margin-top: 1rem; }
+    .service-card, .review-card { border-top: 4px solid var(--secondary); }
+    .review-card { margin: 0; }
+    .review-card blockquote { margin: 0 0 1rem; }
+    .review-card p, .source { margin-top: 0; }
+    figcaption, .source, .service-status { font-size: 0.9rem; }
+
+    details + details { margin-top: 0.65rem; }
+    summary { padding: 0.5rem; border-radius: 0.5rem; }
+    .service-answer { padding-inline: 0.5rem; }
+    .service-answer p:last-child { margin-bottom: 0; }
+    .card:focus-within { box-shadow: 0 6px 18px var(--shadow); }
+
+    .site-footer {
+      margin-top: 1rem;
+      border-block-start: 1px solid var(--border);
+      border-block-end: 0;
+    }
+
+    @media (max-width: 48rem) {
+      .site-nav { width: 100%; }
+    }
+
+    @media (hover: hover) {
+      .site-nav a:not(.button):hover {
+        text-decoration-thickness: 0.18em;
+      }
+
+      .filters button[aria-pressed="false"]:hover {
+        background: var(--secondary);
+      }
+
+      summary:hover { background: rgb(16 56 47 / 9%); }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      html { scroll-behavior: smooth; }
+
+      .hero-copy, .answer-box, details[open] .service-answer {
+        animation: fade-in 260ms ease-out both;
+      }
+
+      @keyframes fade-in {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    }
+
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+      .card, .button, .brand svg, .filters button, summary {
+        transition: transform 180ms ease, box-shadow 180ms ease,
+                    background-color 180ms ease;
+      }
+
+      .site-nav a:not(.button) {
+        transition: text-decoration-thickness 180ms ease;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 24px var(--shadow);
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 12px var(--shadow);
+      }
+
+      .brand:hover svg { transform: rotate(-8deg); }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+<a href="index.html" class="site-logo" aria-label="People's Guide home"
+   style="display:inline-flex; flex-direction:row; align-items:center; gap:10px; text-decoration:none; color:#10382F;">
+  <svg width="36" height="36" viewBox="0 0 32 32" aria-hidden="true"
+       style="width:36px; height:36px; flex:none; display:block;">
+    <rect width="32" height="32" rx="8" fill="#10382F"/>
+    <path d="M10 24V9h6.5a4.75 4.75 0 010 9.5H10"
+          stroke="#F2B33D" stroke-width="3.2" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span style="font-family:Georgia,'Times New Roman',serif; font-weight:700; font-size:1.25rem; line-height:1; white-space:nowrap;">
+    People's Guide
+  </span>
+</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="#about">About</a>
+        <a href="#services">Services</a>
+        <a href="#support">Support</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#contact">Contact us</a>
+      
+        <a class="button" href="http://127.0.0.1:8000/">Log in</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="container hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="location">SHEFFIELD, UK</p>
+        <h1 id="hero-title">Find the support you need in the UK.</h1>
+        <p class="tagline">The Right Support. The Right Information. One Place.</p>
+        <p>Find guidance on housing, job loss and everyday living costs.</p>
+        <div class="actions">
+          <a class="button" href="#guide">Start the guide</a>
+          <a href="#services">Browse all services</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="guide" class="container section" aria-labelledby="guide-title">
+      <div class="panel">
+        <h2 id="guide-title">Find your next step</h2>
+        <p>Choose what you need help with. Your selection stays in this tab.</p>
+
+        <form id="guide-form" class="guide-form" hidden>
+          <label for="topic">What do you need help with?</label>
+          <select id="topic" required>
+            <option value="">Choose a topic</option>
+            <option value="housing">Housing and rent</option>
+            <option value="income">Job loss and income</option>
+            <option value="costs">Living costs</option>
+          </select>
+          <button class="button" type="submit">Show my next step</button>
+        </form>
+
+        <div id="guide-result" class="answer-box" hidden>
+          <h3 id="next-title" tabindex="-1"></h3>
+          <p id="next-detail"></p>
+          <div id="next-answer"></div>
+        </div>
+
+        <noscript><p><a href="#services">Browse the service directory</a></p></noscript>
+      </div>
+    </section>
+
+    <section id="about" class="container section" aria-labelledby="about-title">
+      <h2 id="about-title">About People’s Guide</h2>
+      <p class="section-intro">
+        People’s Guide brings together starting points for UK residents.
+        Our local housing guidance focuses on Sheffield.
+      </p>
+
+      <div class="cards">
+        <article class="card">
+          <h3>Our mission</h3>
+          <p>Help residents find reliable public service information and understand how to access support.</p>
+        </article>
+
+        <article class="card">
+          <h3>Our vision</h3>
+          <p>A future where everyone can find and access essential support, however familiar they are with the system.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="services" class="container section" aria-labelledby="services-title">
+      <h2 id="services-title">Explore services</h2>
+
+      <div id="service-filters" class="filters" role="group"
+           aria-label="Filter services by topic" hidden>
+        <button type="button" data-filter="all" aria-pressed="true">All services</button>
+        <button type="button" data-filter="housing" aria-pressed="false">Housing</button>
+        <button type="button" data-filter="income" aria-pressed="false">Income</button>
+        <button type="button" data-filter="costs" aria-pressed="false">Living costs</button>
+      </div>
+
+      <p id="service-status" class="service-status" role="status"></p>
+
+      <div class="cards">
+        <article class="card service-card" data-topic="housing">
+          <p class="source">Sheffield City Council</p>
+          <h3>Housing and rent</h3>
+          <p>Find a starting point if you’re behind on rent or worried about losing your home.</p>
+          <details>
+            <summary>What can I do about rent or housing?</summary>
+            <div class="service-answer">
+              <p>If you might lose your home, contact Sheffield City Council’s Housing Solutions team to discuss your options.</p>
+              <p>Have your tenancy details and any letters about rent arrears or eviction to hand.</p>
+            </div>
+          </details>
+        </article>
+
+        <article class="card service-card" data-topic="income">
+          <p class="source">GOV.UK</p>
+          <h3>Job loss and income</h3>
+          <p>Find out what to check if your income has dropped.</p>
+          <details>
+            <summary>What should I check for Universal Credit?</summary>
+            <div class="service-answer">
+              <p>Universal Credit may help with living costs if you’re out of work or on a low income.</p>
+              <p>Gather information about your income, savings, household and housing costs before checking eligibility.</p>
+            </div>
+          </details>
+        </article>
+
+        <article class="card service-card" data-topic="costs">
+          <p class="source">GOV.UK</p>
+          <h3>Living costs</h3>
+          <p>Get ready to check what financial help you might receive.</p>
+          <details>
+            <summary>What information should I gather?</summary>
+            <div class="service-answer">
+              <p>Make a list of household income, savings, existing benefits, rent and childcare costs.</p>
+              <p>A benefits calculator can use those details to estimate what support you might receive.</p>
+            </div>
+          </details>
+        </article>
+      </div>
+    </section>
+
+    <section id="support" class="container section" aria-labelledby="support-title">
+      <div class="panel">
+        <h2 id="support-title">Support</h2>
+
+        <details>
+          <summary>Where should I start?</summary>
+          <div class="service-answer">
+            <p><a href="#guide">Start the guide</a> to choose a topic and see a suggested next step.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Do I need an account?</summary>
+          <div class="service-answer">
+            <p>You can use the guide and browse services without an account.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>How do I find out if I qualify?</summary>
+          <div class="service-answer">
+            <p>Open a <a href="#services">service card</a> to see what to check. The service provider determines eligibility.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="reviews" class="container section" aria-labelledby="reviews-title">
+      <h2 id="reviews-title">Anonymous reviews</h2>
+      <p class="section-intro">These fictional reviews show what feedback could look like in the prototype.</p>
+
+      <div class="cards">
+        <figure class="card review-card">
+          <blockquote>
+            <p>“I was worried about falling behind on rent. The guide gave me a clear first step and told me what to have ready.”</p>
+          </blockquote>
+          <figcaption> Housing and rent</figcaption>
+        </figure>
+
+        <figure class="card review-card">
+          <blockquote>
+            <p>“After losing my job, I had no idea where to start. The income section helped me work out what information to gather.”</p>
+          </blockquote>
+          <figcaption> Job loss and income</figcaption>
+        </figure>
+
+        <figure class="card review-card">
+          <blockquote>
+            <p>“I liked that I could read the answers on the same page. I found what I needed without creating an account.”</p>
+          </blockquote>
+          <figcaption> Living costs</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="contact" class="container section" aria-labelledby="contact-title">
+      <h2 id="contact-title">Contact us</h2>
+      <details class="card">
+        <summary>Show the People’s Guide phone number</summary>
+        <div class="service-answer">
+          <p>For questions about People’s Guide, call <strong>07001 522100</strong>.</p>
+        </div>
+      </details>
+    </section>
+
+    <section id="login" class="container section" aria-labelledby="login-title">
+      <div class="panel">
+        <h2 id="login-title">Log in</h2>
+        <p>Sign-in will be available when the account system is connected.</p>
+        <a class="button" href="#guide">Use the guide without an account</a>
+      </div>
+    </section>
+
+    <section id="register" class="container section" aria-labelledby="register-title">
+      <div class="panel">
+        <h2 id="register-title">Register</h2>
+        <p>Registration will be available when the account system is connected.</p>
+        <a class="button" href="#services">Browse services without an account</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">People’s Guide · UK public services</div>
+  </footer>
+
+  <script>
+    const cards = [...document.querySelectorAll('.service-card')];
+    const filters = document.querySelector('#service-filters');
+    const filterButtons = [...filters.querySelectorAll('[data-filter]')];
+    const serviceStatus = document.querySelector('#service-status');
+
+    function filterServices(selectedButton) {
+      const selectedTopic = selectedButton.dataset.filter;
+
+      for (const card of cards) {
+        card.hidden = selectedTopic !== 'all' && card.dataset.topic !== selectedTopic;
+      }
+
+      for (const button of filterButtons) {
+        button.setAttribute('aria-pressed', String(button === selectedButton));
+      }
+
+      const count = cards.filter((card) => !card.hidden).length;
+      serviceStatus.textContent = count === 1
+        ? '1 service shown.'
+        : `${count} services shown.`;
+    }
+
+    for (const button of filterButtons) {
+      button.addEventListener('click', () => filterServices(button));
+    }
+
+    filters.hidden = false;
+    filterServices(filterButtons[0]);
+
+    const form = document.querySelector('#guide-form');
+    const topic = document.querySelector('#topic');
+    const result = document.querySelector('#guide-result');
+    const nextTitle = document.querySelector('#next-title');
+    const nextDetail = document.querySelector('#next-detail');
+    const nextAnswer = document.querySelector('#next-answer');
+
+    form.hidden = false;
+
+    topic.addEventListener('change', () => {
+      result.hidden = true;
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const card = cards.find((item) => item.dataset.topic === topic.value);
+      if (!card) return;
+
+      nextTitle.textContent = card.querySelector('h3').textContent;
+      nextDetail.textContent = card.querySelector('h3 + p').textContent;
+
+      const paragraphs = [...card.querySelectorAll('.service-answer p')];
+      nextAnswer.replaceChildren(
+        ...paragraphs.map((paragraph) => paragraph.cloneNode(true))
+      );
+
+      result.hidden = false;
+      nextTitle.focus();
+    });
+  </script>
+</body>
+</html>
